@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Dokcercon 2017 Linux Web App Demo
+# Linux Web App Demo
 # Author: Lukasz Stempniewicz
 #
 ESC_SEQ="\x1b["
@@ -20,7 +20,7 @@ printf "Resource group name:"
 read rg
 if [[ -z $rg ]]; then
   printf "${YELLOW}Empty${NC} resource group, creating random name\n"
-  rg=RGDockerCon$RANDOM
+  rg=RGBuildDemo$RANDOM
 fi
 printf "$rg sounds fantastic!\n\n"
 
@@ -36,7 +36,7 @@ printf "App Service Plan name:"
 read aspname
 if [[ -z $aspname ]]; then
   printf "${YELLOW}Warning!${NC} Empty App Service Plan name, creating random name\n"
-  aspname=ASPDockerCon$RANDOM
+  aspname=ASPBuildDemo$RANDOM
 fi
 printf "Using $aspname\n\n"
 
@@ -64,18 +64,17 @@ printf "Running:\n   az group create -l \"$location\" -n $rg\n"
 az group create -l $location -n $rg
 printf "Running:\n   az appservice plan create -n $aspname -g $rg --sku $sku --is-linux\n"
 az appservice plan create -n $aspname -g $rg --sku $sku --is-linux
-printf "Running:\n   az appservice web create -g $rg -n $webapp -p $aspname\n"
-az appservice web create -g $rg -n $webapp -p $aspname
+printf "Running:\n   az webapp create -g $rg -n $webapp -p $aspname\n"
+az webapp create -g $rg -n $webapp -p $aspname
 
 printf "${GREEN}Webapp created!${NC} URL:${CYAN}$webapp.azurewebsites.net${NC}\n\n"
 
 configureForPokemonShowdown () {
   dockercustomimage="hasjo/pokemon-showdown" 
-  printf "Running az appservice web config container update --docker-custom-image-name $dockercustomimage -g $rg -n $webapp -p $aspname\n" 
-  az appservice web config container update --docker-custom-image-name $dockercustomimage -g $rg -n $webapp -p $aspname 
+  printf "Running az webapp config container set --docker-custom-image-name $dockercustomimage -g $rg -n $webapp -p $aspname\n" 
+  az webapp config container set --docker-custom-image-name $dockercustomimage -g $rg -n $webapp -p $aspname 
   printf "${MAGENTA} Pokemon showdown has been installed on $webapp.azurewebsites.net${NC}\n"
   printf "${MAGENTA} It may take up to two minutes to initialize${NC}\n"
-  printf "${CYAN}Please copy url into any browser to start.${NC}\n\n"
 }
 
 case "$response" in
@@ -86,3 +85,5 @@ case "$response" in
         # no-op  
         ;;
 esac
+
+curl -s -o /dev/null -v $webapp.azurewebsites.net 
